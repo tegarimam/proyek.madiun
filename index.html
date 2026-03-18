@@ -1,1 +1,223 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoring Madiun | Dashboard Proyek</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #64748b;
+            --success-color: #22c55e;
+            --bg-color: #f8fafc;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .card {
+            background: white;
+            width: 100%;
+            max-width: 450px;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .header h1 {
+            color: #1e293b;
+            font-size: 1.5rem;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .header p {
+            color: var(--secondary-color);
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 0.5rem;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .input-suffix {
+            position: relative;
+        }
+
+        .input-suffix input {
+            padding-right: 40px;
+        }
+
+        .input-suffix::after {
+            content: "%";
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--secondary-color);
+            font-weight: bold;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.8rem;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 1rem;
+        }
+
+        button:hover {
+            background-color: #1d4ed8;
+        }
+
+        button:disabled {
+            background-color: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        #statusMessage {
+            margin-top: 1rem;
+            text-align: center;
+            font-size: 0.9rem;
+            padding: 0.5rem;
+            border-radius: 6px;
+            display: none;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="header">
+        <h1>Monitoring Madiun</h1>
+        <p>Input Laporan Proyek Harian</p>
+    </div>
+
+    <form id="submit-to-google-sheet">
+        <div class="form-group">
+            <label for="namaPekerjaan">Nama Pekerjaan</label>
+            <input type="text" id="namaPekerjaan" name="namaPekerjaan" placeholder="Misal: Pengecoran Slab" required>
+        </div>
+
+        <div class="form-group">
+            <label for="detailPekerjaan">Detail Pekerjaan</label>
+            <textarea id="detailPekerjaan" name="detailPekerjaan" rows="3" placeholder="Jelaskan progres secara singkat..." required></textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="persentase">Persentase Proyek</label>
+            <div class="input-suffix">
+                <input type="number" id="persentase" name="persentase" min="0" max="100" placeholder="0 - 100" required>
+            </div>
+        </div>
+
+        <button type="submit" id="submitBtn">Kirim Laporan</button>
+    </form>
+
+    <div id="statusMessage"></div>
+</div>
+
+<script>
+    // MASUKKAN URL WEB APP GOOGLE SCRIPT ANDA DI SINI
+    const scriptURL = 'MASUKKAN_URL_DEPLOYMENT_ANDA_DISINI';
+    
+    const form = document.forms['submit-to-google-sheet'];
+    const btn = document.getElementById('submitBtn');
+    const msg = document.getElementById('statusMessage');
+
+    form.addEventListener('submit', e => {
+        e.preventDefault();
+        
+        // Animasi Loading
+        btn.disabled = true;
+        btn.innerHTML = '<span class="loading-spinner"></span> Mengirim...';
+        
+        fetch(scriptURL, { method: 'POST', body: new FormData(form)})
+            .then(response => {
+                msg.style.display = "block";
+                msg.style.backgroundColor = "#dcfce7";
+                msg.style.color = "#166534";
+                msg.innerHTML = "✅ Data berhasil dikirim ke Spreadsheet!";
+                
+                btn.disabled = false;
+                btn.innerHTML = "Kirim Laporan";
+                form.reset();
+
+                // Hilangkan pesan setelah 5 detik
+                setTimeout(() => { msg.style.display = "none"; }, 5000);
+            })
+            .catch(error => {
+                msg.style.display = "block";
+                msg.style.backgroundColor = "#fee2e2";
+                msg.style.color = "#991b1b";
+                msg.innerHTML = "❌ Gagal: " + error.message;
+                
+                btn.disabled = false;
+                btn.innerHTML = "Kirim Laporan";
+            });
+    });
+</script>
+
+</body>
+</html>
 
