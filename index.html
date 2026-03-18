@@ -5,16 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monitoring Madiun</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
-        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); width: 100%; max-width: 400px; border-top: 5px solid #1a73e8; }
-        h2 { color: #1a73e8; text-align: center; margin-top: 0; margin-bottom: 20px; font-size: 22px; }
-        label { display: block; margin-bottom: 8px; font-weight: 600; color: #444; font-size: 14px; }
-        input, textarea { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 14px; transition: 0.3s; }
-        input:focus, textarea:focus { border-color: #1a73e8; outline: none; box-shadow: 0 0 0 3px rgba(26,115,232,0.1); }
-        button { width: 100%; padding: 14px; background: #1a73e8; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; transition: 0.3s; margin-top: 10px; }
-        button:hover { background: #1557b0; }
-        button:disabled { background: #999; cursor: not-allowed; }
-        #notif { margin-top: 20px; padding: 12px; border-radius: 8px; text-align: center; display: none; font-size: 14px; font-weight: 500; }
+        body { font-family: sans-serif; background: #f4f7f6; display: flex; justify-content: center; padding: 20px; }
+        .card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        h2 { color: #1a73e8; text-align: center; }
+        label { display: block; margin: 10px 0 5px; font-weight: bold; }
+        input, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #1a73e8; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 15px; font-weight: bold; }
+        #status { margin-top: 15px; text-align: center; padding: 10px; border-radius: 5px; display: none; }
     </style>
 </head>
 <body>
@@ -23,63 +20,54 @@
     <h2>Monitoring Madiun</h2>
     <form id="formLaporan">
         <label>Nama Pekerjaan</label>
-        <input type="text" name="namaPekerjaan" id="namaPekerjaan" placeholder="Contoh: Pekerjaan Finishing" required>
-        
+        <input type="text" name="namaPekerjaan" required>
         <label>Detail Pekerjaan</label>
-        <textarea name="detailPekerjaan" id="detailPekerjaan" rows="3" placeholder="Jelaskan progres..." required></textarea>
-        
+        <textarea name="detailPekerjaan" rows="3" required></textarea>
         <label>Persentase Proyek (%)</label>
-        <input type="number" name="persentase" id="persentase" min="0" max="100" placeholder="0 - 100" required>
-        
+        <input type="number" name="persentase" min="0" max="100" required>
         <button type="submit" id="btnKirim">Kirim Laporan</button>
     </form>
-    <div id="notif"></div>
+    <div id="status"></div>
 </div>
 
 <script>
-    // MASUKKAN URL WEB APP (EXEC) ANDA DI SINI
-    const scriptURL = 'https://docs.google.com/spreadsheets/d/1rArk9svOa9TJMTsJioDmD4TMgfL8CouKqEoQPRRi19A/edit?usp=sharing';
+    // TEMPEL LINK /EXEC BARU DARI LANGKAH 1 DI SINI
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbyU1rpo5jQlHx0TglTNhTYb9TpYgm3rc898Bec4A34UVo4o-aoKMG2m4hAZCFaF8Jw_JQ/exec';
     
     const form = document.getElementById('formLaporan');
+    const status = document.getElementById('status');
     const btn = document.getElementById('btnKirim');
-    const notif = document.getElementById('notif');
 
     form.addEventListener('submit', e => {
         e.preventDefault();
+        btn.disabled = true;
+        btn.innerText = 'Mengirim...';
         
-        // Validasi link
-        if(scriptURL.includes('TEMPEL_URL')) {
-            alert('Mohon masukkan URL Web App dari Google Sheets terlebih dahulu!');
+        // Cek jika URL masih bawaan
+        if(scriptURL.includes('PASTE_URL')) {
+            alert('Error: Anda belum mengganti scriptURL di kode GitHub!');
+            btn.disabled = false;
+            btn.innerText = 'Kirim Laporan';
             return;
         }
 
-        btn.disabled = true;
-        btn.innerText = 'Sedang Mengirim...';
-        notif.style.display = 'none';
-        
-        // Menggunakan FormData agar 'name' pada input terbaca oleh e.parameter di Apps Script
-        fetch(scriptURL, { 
-            method: 'POST', 
-            body: new FormData(form),
-            mode: 'no-cors' // Penting untuk bypass CORS dari GitHub ke Google
-        })
+        fetch(scriptURL, { method: 'POST', body: new FormData(form), mode: 'no-cors' })
         .then(() => {
-            notif.style.display = 'block';
-            notif.style.background = '#d4edda';
-            notif.style.color = '#155724';
-            notif.innerHTML = '✅ <b>Berhasil!</b> Laporan masuk ke Spreadsheet.';
+            status.style.display = 'block';
+            status.style.background = '#d4edda';
+            status.style.color = '#155724';
+            status.innerText = '✅ Terkirim! Cek Spreadsheet Anda sekarang.';
             btn.disabled = false;
             btn.innerText = 'Kirim Laporan';
             form.reset();
         })
         .catch(error => {
-            notif.style.display = 'block';
-            notif.style.background = '#f8d7da';
-            notif.style.color = '#721c24';
-            notif.innerText = '❌ Gagal mengirim. Cek koneksi atau URL Script.';
+            status.style.display = 'block';
+            status.style.background = '#f8d7da';
+            status.style.color = '#721c24';
+            status.innerText = '❌ Gagal. Pastikan URL benar.';
             btn.disabled = false;
             btn.innerText = 'Kirim Laporan';
-            console.error('Error!', error.message);
         });
     });
 </script>
