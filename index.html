@@ -5,69 +5,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monitoring Madiun</title>
     <style>
-        body { font-family: sans-serif; background: #f4f7f6; display: flex; justify-content: center; padding: 20px; }
-        .card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
-        h2 { color: #1a73e8; text-align: center; }
-        label { display: block; margin: 10px 0 5px; font-weight: bold; }
-        input, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #1a73e8; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 15px; font-weight: bold; }
-        #status { margin-top: 15px; text-align: center; padding: 10px; border-radius: 5px; display: none; }
+        body { font-family: sans-serif; display: flex; justify-content: center; padding: 20px; background: #eee; }
+        .box { background: white; padding: 20px; border-radius: 10px; width: 100%; max-width: 350px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        input, textarea { width: 100%; margin: 10px 0; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px; }
+        button { width: 100%; padding: 10px; background: #1a73e8; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        #status { margin-top: 15px; text-align: center; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h2>Monitoring Madiun</h2>
-    <form id="formLaporan">
-        <label>Nama Pekerjaan</label>
-        <input type="text" name="namaPekerjaan" required>
-        <label>Detail Pekerjaan</label>
-        <textarea name="detailPekerjaan" rows="3" required></textarea>
-        <label>Persentase Proyek (%)</label>
-        <input type="number" name="persentase" min="0" max="100" required>
-        <button type="submit" id="btnKirim">Kirim Laporan</button>
+<div class="box">
+    <h3 style="text-align:center">Monitoring Madiun</h3>
+    <form id="formMadiun">
+        <input type="text" name="namaPekerjaan" placeholder="Nama Pekerjaan" required>
+        <textarea name="detailPekerjaan" placeholder="Detail Progres" required></textarea>
+        <input type="number" name="persentase" placeholder="Persentase (%)" required>
+        <button type="submit" id="btnKirim">Kirim Data</button>
     </form>
     <div id="status"></div>
 </div>
 
 <script>
-    // TEMPEL LINK /EXEC BARU DARI LANGKAH 1 DI SINI
+    // GANTI DENGAN URL BARU DARI LANGKAH 1
     const scriptURL = 'https://script.google.com/macros/s/AKfycbyU1rpo5jQlHx0TglTNhTYb9TpYgm3rc898Bec4A34UVo4o-aoKMG2m4hAZCFaF8Jw_JQ/exec';
-    
-    const form = document.getElementById('formLaporan');
+    const form = document.getElementById('formMadiun');
     const status = document.getElementById('status');
-    const btn = document.getElementById('btnKirim');
 
     form.addEventListener('submit', e => {
         e.preventDefault();
-        btn.disabled = true;
-        btn.innerText = 'Mengirim...';
+        status.innerText = "Sedang mengirim...";
+        status.style.color = "black";
         
-        // Cek jika URL masih bawaan
-        if(scriptURL.includes('PASTE_URL')) {
-            alert('Error: Anda belum mengganti scriptURL di kode GitHub!');
-            btn.disabled = false;
-            btn.innerText = 'Kirim Laporan';
-            return;
-        }
-
         fetch(scriptURL, { method: 'POST', body: new FormData(form), mode: 'no-cors' })
         .then(() => {
-            status.style.display = 'block';
-            status.style.background = '#d4edda';
-            status.style.color = '#155724';
-            status.innerText = '✅ Terkirim! Cek Spreadsheet Anda sekarang.';
-            btn.disabled = false;
-            btn.innerText = 'Kirim Laporan';
+            status.innerText = "✅ BERHASIL! Cek Spreadsheet.";
+            status.style.color = "green";
             form.reset();
         })
-        .catch(error => {
-            status.style.display = 'block';
-            status.style.background = '#f8d7da';
-            status.style.color = '#721c24';
-            status.innerText = '❌ Gagal. Pastikan URL benar.';
-            btn.disabled = false;
-            btn.innerText = 'Kirim Laporan';
+        .catch(() => {
+            status.innerText = "❌ GAGAL! Cek URL.";
+            status.style.color = "red";
         });
     });
 </script>
